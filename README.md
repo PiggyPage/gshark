@@ -1,57 +1,96 @@
 <p align="center">
    <img alt="GgShark logo" src="https://s1.ax1x.com/2018/10/17/idhZvj.png" />
    <h3 align="center">GShark</h3>
-   <p align="center">Scan for sensitive information in Github easily and effectively.</p>
+   <p align="center">Scan for sensitive information easily and effectively.</p>
 </p>
 
-# GShark [![Go Report Card](https://goreportcard.com/badge/github.com/neal1991/gshark)](https://goreportcard.com/report/github.com/neal1991/gshark)   [![Travis](https://travis-ci.org/neal1991/gshark.svg?branch=master)](https://travis-ci.org/neal1991/gshark.svg?branch=master)
+# GShark [![Go Report Card](https://goreportcard.com/badge/github.com/madneal/gshark)](https://goreportcard.com/report/github.com/madneal/gshark)   
 
-The project is based on golang with AdminLTE to build a management system to manage the Github search results. Github API is utilized to scawl the related results according to key words and some rules. It proves to be a proper way to detect the information related to your company.:rocket::rocket::rocket:
+The project is based on go with vue to build a management system for sensitive information detection. This is the total fresh version, you can refer the [old version](https://github.com/madneal/gshark/blob/gin/OLD_README.md) here. For the full introduction of the new version, please refer [here](https://mp.weixin.qq.com/s/Yoo1DdC2lCtqOMAreF9K0w).
 
-![ezgif com-optimize](https://user-images.githubusercontent.com/12164075/47776907-72db2a00-dd2e-11e8-9862-db4aa5c458ff.gif)
 
-## Requirements
+# Features
 
-* go version 1.10+
-* the project should be placed in GOPATH/src/github.com/neal1991/
+* Support multi platform, including Gitlab, Github, Searchcode
+* Flexible menu and API permission setting
+* Flexible rules and filter rules
+* Utilize gobuster to brute force subdomain
+* Easily used management system
 
-## Config
+# Quick start
 
-The configuration can be set according to app-template.ini. You should rename it to app.ini to config the project.
+![GShark](https://user-images.githubusercontent.com/12164075/114326875-58e1da80-9b69-11eb-82a5-b2e3751a2304.png)
+
+## Deployment
+
+For the deployment, it's suggested to install nginx. Place the `dist` folder under `html`, modify the `nginx.conf` to reverse proxy the backend service. I have also made a video for the deployment in [bilibili](https://www.bilibili.com/video/BV1Py4y1s7ap/) and [youtube](https://youtu.be/bFrKm5t4M54). For the deploment in windows, refer [here](https://www.bilibili.com/video/BV1CA411L7ux/).
 
 ```
-HTTP_HOST = 127.0.0.1
-HTTP_PORT = 8000
-MAX_INDEXERS = 2
-DEBUG_MODE = true
-REPO_PATH = repos
-MAX_Concurrency_REPOS = 5
-
-[database]
-;support sqlite3, mysql, postgres
-DB_TYPE = sqlite
-HOST = 127.0.0.1
-PORT = 3306
-NAME = misec
-USER = root
-PASSWD = 
-SSL_MODE = disable
-;the path to store the database file of sqlite3
-PATH = 
+location /api/ {
+proxy_set_header Host $http_host;
+proxy_set_header  X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+proxy_set_header X-Forwarded-Proto $scheme;
+rewrite ^/api/(.*)$ /$1 break;
+proxy_pass http://127.0.0.1:8888;
+}
 ```
 
-## Before Running
+The deployment work is very easy. Find the corresponding binary zip file from [releases](https://github.com/madneal/gshark/releases). Unzip and run. Remember to copy the files inside `dist` to `html` folder of nginx.
 
-* Make sure you have installed dependencies
-* Make sure the app.ini in config folder, you can rename app-template.ini to app.ini
-* Make sure that you have config and set database correctly
+### Web service
+
+```
+./gshark web
+```
+
+### Scan service
+
+```
+./gshark scan
+```
+
+## Development
+
+### Server side
+
+``` 
+git clone https://github.com/madneal/gshark.git
+
+cd server
+
+go mod tidy
+
+mv config-temp.yaml config.yaml
+
+go build
+
+./gshark web
+```
+
+If you want to set up the scan service, please run:
+
+```
+./gshark scan
+```
+
+
+
+### Web side
+
+```
+cd ../web
+
+npm install
+
+npm run serve
+```
 
 ## Run
 
-You should build the `main.go` file firstly with the command `go build main.go`.
 ```
 USAGE:
-   main [global options] command [command options] [arguments...]
+   gshark [global options] command [command options] [arguments...]
 
 COMMANDS:
      web      Startup a web Service
@@ -67,28 +106,47 @@ GLOBAL OPTIONS:
    --version, -v           print the version
 ```
 
-### Initial Running
-
-If it's the first time to run, there are some [initial works](https://github.com/neal1991/gshark/blob/0ea3365f88e012df3fef1079df04a4f4b266319d/models/models.go#L31) will be finished automatically.
-
-* [Init Rules](https://github.com/neal1991/gshark/blob/0ea3365f88e012df3fef1079df04a4f4b266319d/models/models.go#L98)
-* [Init admin](https://github.com/neal1991/gshark/blob/0ea3365f88e012df3fef1079df04a4f4b266319d/models/models.go#L117)
-* [Init database](https://github.com/neal1991/gshark/blob/0ea3365f88e012df3fef1079df04a4f4b266319d/models/models.go#L47)
-
 ### Add Token
 
-To execute `main scan`, you need to add a Github token for crawl information in github. You can generate a token in [tokens](https://github.com/settings/tokens). Most access scopes are enough.
+To execute `./gshark scan`, you need to add a Github token for crawl information in github. You can generate a token in [tokens](https://github.com/settings/tokens). Most access scopes are enough. For Gitlab search, remember to add token too.
 
 [![iR2TMt.md.png](https://s1.ax1x.com/2018/10/31/iR2TMt.md.png)](https://imgchr.com/i/iR2TMt)
 
+## FAQ
+
+1. Default username and password to login
+
+gshark/gshark
+
+2. Database initial failed
+
+make sure the version of mysql is over 5.6. And remove the databse before initial the second time.
+
+3. `go get ./... connection error`
+
+It's suggested to enable goproxy(refer this [article](https://madneal.com/post/gproxy/) for golang upgrade):
+
+```
+go env -w GOPROXY=https://goproxy.cn,direct
+go env -w GO111MODULE=on
+```
+
 ## Reference
 
-* [x-patrol](https://github.com/MiSecurity/x-patrol)
-* [authz](https://github.com/go-macaron/authz)
-* [macaron](https://github.com/go-macaron/macaron)
+* [gin-vue-admin](https://github.com/flipped-aurora/gin-vue-admin)
+
+## Wechat
+
+If you would like to join wechat group, you can add my wechat `mmadneal` with the message `gshark`.
 
 ## License
 
-[Apache License 2.0](https://github.com/neal1991/gshark/blob/master/LICENSE)
+[Apache License 2.0](https://github.com/madneal/gshark/blob/master/LICENSE)
 
+## 404StarLink 2.0 - Galaxy
 
+![](https://github.com/knownsec/404StarLink-Project/raw/master/logo.png)
+
+GShark 是 404Team [星链计划2.0](https://github.com/knownsec/404StarLink2.0-Galaxy)中的一环，如果对 GShark 有任何疑问又或是想要找小伙伴交流，可以参考星链计划的加群方式。
+
+- [https://github.com/knownsec/404StarLink2.0-Galaxy#community](https://github.com/knownsec/404StarLink2.0-Galaxy#community)
