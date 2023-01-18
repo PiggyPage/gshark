@@ -1,0 +1,27 @@
+package v1
+
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/madneal/gshark/global"
+	"github.com/madneal/gshark/model/response"
+	"github.com/madneal/gshark/service"
+	"go.uber.org/zap"
+)
+
+func EmailTest(c *gin.Context) {
+	if err := service.EmailTest(); err != nil {
+		global.GVA_LOG.Error("发送失败!", zap.Any("err", err))
+		response.FailWithMessage("发送失败", c)
+	} else {
+		response.OkWithData("发送成功", c)
+	}
+}
+
+func BotTest(c *gin.Context) {
+	if err := service.BotTest(); err != nil {
+		global.GVA_LOG.Error("发送失败!", zap.Any("err", err))
+		response.FailWithMessage("发送失败", c)
+	} else {
+		response.OkWithData("发送成功", c)
+	}
+}
